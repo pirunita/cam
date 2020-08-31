@@ -1,0 +1,12 @@
+## Ignore file ##
+
+.DS_Store
+.vscode
+
+__pycache__
+
+VOCdevkit
+
+CAM
+EDM
+Wavelet
