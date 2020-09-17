@@ -9,6 +9,8 @@ from misc import imutils
 
 IMG_FOLDER_NAME = "JPEGImages"
 ANNOT_FOLDER_NAME = "Annotations"
+EDGE_FOLDER_NAME = "EdgesJPG"
+
 IGNORE = 255
 
 CAT_LIST = ['aeroplane', 'bicycle', 'bird', 'boat',
@@ -56,6 +58,11 @@ def get_img_path(img_name, voc12_root):
         img_name = decode_int_filename(img_name)
     return os.path.join(voc12_root, IMG_FOLDER_NAME, img_name + '.jpg')
 
+def get_edge_path(edge_name, voc12_root):
+    if not isinstance(edge_name, str):
+        edge_name = decode_int_filename(edge_name)
+    return os.path.join(voc12_root, EDGE_FOLDER_NAME, edge_name + '.jpg')
+
 def load_img_name_list(dataset_path):
 
     img_name_list = np.loadtxt(dataset_path, dtype=np.int32)
@@ -77,6 +84,24 @@ class TorchvisionNormalize():
         proc_img[..., 2] = (imgarr[..., 2] / 255. - self.mean[2]) / self.std[2]
 
         return proc_img
+
+
+class VOC12EdgeDataset(Dataset):
+    def __init__(self, img_name_list_path, voc12_root):
+        self.img_name_list = load_img_name_list(img_name_list_path)
+        self.voc12_root = voc12_root
+        
+    def __len__(self):
+        return len(self.img_name_list)
+    
+    def __getitem__(self, idx):
+        name = self.img_name_list[idx]
+        name_str = decode_int_filename(name)
+        
+        img = np.asarray (imageio.imread(get_img_path(name_str, self.voc12_root), pilmode='RGB'))
+        edge_img = np.asarray(imageio.imread(get_edge_path(name_str, self.voc12_root), pilmode='RGB'))
+        
+        return {'name': name, 'img':img, 'edge': edge_img}
 
 
 class VOC12ImageDataset(Dataset):
